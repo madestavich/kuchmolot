@@ -95,22 +95,87 @@ body {
 /* Reels */
 .reels-container {
   position: relative;
-  margin-bottom: 10px;
-  flex: 1;
+  margin-bottom: 0;
+  flex: 0 1 auto;
   min-height: 0;
   display: flex;
   flex-direction: column;
 }
 
+/* Decorative panels above and below reels */
+.decor-panel {
+  flex: 1;
+  min-height: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 20px;
+}
+
+.decor-stripe {
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 215, 0, 0.3) 20%,
+    rgba(255, 215, 0, 0.6) 50%,
+    rgba(255, 215, 0, 0.3) 80%,
+    transparent 100%
+  );
+  border-radius: 1px;
+}
+
+.decor-dots {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+}
+
+.decor-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffd700 30%, #b8860b 100%);
+  box-shadow: 0 0 6px rgba(255, 215, 0, 0.5);
+  animation: dotPulse 2s ease-in-out infinite alternate;
+}
+
+.decor-dot:nth-child(2) {
+  animation-delay: 0.3s;
+}
+.decor-dot:nth-child(3) {
+  animation-delay: 0.6s;
+}
+.decor-dot:nth-child(4) {
+  animation-delay: 0.9s;
+}
+.decor-dot:nth-child(5) {
+  animation-delay: 1.2s;
+}
+
+@keyframes dotPulse {
+  from {
+    box-shadow: 0 0 4px rgba(255, 215, 0, 0.3);
+    opacity: 0.6;
+  }
+  to {
+    box-shadow: 0 0 12px rgba(255, 215, 0, 0.8);
+    opacity: 1;
+  }
+}
+
 .reels-window {
   display: flex;
-  gap: 6px;
+  gap: 2px;
   background: #0a0a1a;
   border-radius: 12px;
-  padding: 10px;
+  padding: 4px;
   border: 2px solid #333;
   overflow: hidden;
-  flex: 1;
+  flex: 0 1 auto;
   min-height: 0;
 }
 
@@ -144,23 +209,23 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 5px;
+  padding: 1px;
 }
 
 .symbol-cell img {
-  max-width: 95%;
-  max-height: 95%;
+  max-width: 100%;
+  max-height: 100%;
   object-fit: contain;
-  border-radius: 8px;
+  border-radius: 6px;
   image-rendering: auto;
 }
 
 /* Payline overlay */
 .payline-overlay {
   position: absolute;
-  top: 10px;
-  left: 10px;
-  right: 10px;
+  top: 4px;
+  left: 4px;
+  right: 4px;
   bottom: 0;
   pointer-events: none;
   z-index: 10;
@@ -771,8 +836,8 @@ body {
   }
 
   .reels-window {
-    gap: 3px;
-    padding: 4px;
+    gap: 2px;
+    padding: 3px;
     border-radius: 8px;
   }
 
@@ -841,8 +906,8 @@ body {
   }
 
   .reels-window {
-    gap: 2px;
-    padding: 3px;
+    gap: 1px;
+    padding: 2px;
   }
 }
 

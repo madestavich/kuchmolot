@@ -25,7 +25,7 @@ const SYMBOLS = [
     type: "regular",
     tier: 2,
   },
-  { id: "h1", file: "symbols/1.webp", name: "1", type: "helper", comboNum: 1 },
+  { id: "h1", file: "symbols/1.png", name: "1", type: "helper", comboNum: 1 },
   { id: "h2", file: "symbols/2.jpg", name: "2", type: "helper", comboNum: 2 },
   { id: "h3", file: "symbols/3.jpg", name: "3", type: "helper", comboNum: 3 },
   { id: "h4", file: "symbols/4.jpg", name: "4", type: "helper", comboNum: 4 },
@@ -281,12 +281,20 @@ const ctx = canvas.getContext("2d");
 // ---- INITIALIZATION ----
 
 function init() {
-  // Calculate initial symbol height from reel size
+  // Calculate initial symbol height from reel size (capped to reel width for squarish cells)
   const reel0 = document.getElementById("reel-0");
   if (reel0 && reel0.clientHeight > 0) {
-    SYMBOL_HEIGHT = Math.floor(reel0.clientHeight / VISIBLE_ROWS);
+    SYMBOL_HEIGHT = Math.min(
+      Math.floor(reel0.clientHeight / VISIBLE_ROWS),
+      reel0.clientWidth,
+    );
   }
   buildReels();
+  // Clamp reel heights
+  for (let r = 0; r < NUM_REELS; r++) {
+    document.getElementById(`reel-${r}`).style.maxHeight =
+      VISIBLE_ROWS * SYMBOL_HEIGHT + "px";
+  }
   setupControls();
   resizeCanvas();
   window.addEventListener("resize", resizeCanvas);
@@ -418,19 +426,24 @@ function updateSpinButton() {
 
 function resizeCanvas() {
   const container = document.querySelector(".reels-window");
-  canvas.width = container.clientWidth - 20;
+  canvas.width = container.clientWidth - 8;
   canvas.height = container.clientHeight - 0;
 
-  // Recalculate symbol height based on actual reel size
+  // Recalculate symbol height based on actual reel size (capped to reel width)
   const reel0 = document.getElementById("reel-0");
   if (reel0) {
-    SYMBOL_HEIGHT = Math.floor(reel0.clientHeight / VISIBLE_ROWS);
+    SYMBOL_HEIGHT = Math.min(
+      Math.floor(reel0.clientHeight / VISIBLE_ROWS),
+      reel0.clientWidth,
+    );
     // Update all symbol cells
     document.querySelectorAll(".symbol-cell").forEach((cell) => {
       cell.style.height = SYMBOL_HEIGHT + "px";
     });
     // Re-position strips
     for (let r = 0; r < NUM_REELS; r++) {
+      const reelEl = document.getElementById(`reel-${r}`);
+      reelEl.style.maxHeight = VISIBLE_ROWS * SYMBOL_HEIGHT + "px";
       const strip = document.getElementById(`strip-${r}`);
       if (strip && !strip.classList.contains("spinning")) {
         strip.style.transform = `translateY(-${EXTRA_SYMBOLS * SYMBOL_HEIGHT}px)`;
