@@ -283,11 +283,23 @@ const ctx = canvas.getContext("2d");
 function init() {
   // Calculate initial symbol height from reel size (capped to reel width for squarish cells)
   const reel0 = document.getElementById("reel-0");
+  const reelsWindow = document.querySelector(".reels-window");
   if (reel0 && reel0.clientHeight > 0) {
-    SYMBOL_HEIGHT = Math.min(
-      Math.floor(reel0.clientHeight / VISIBLE_ROWS),
-      reel0.clientWidth,
-    );
+    const rawHeight = Math.floor(reel0.clientHeight / VISIBLE_ROWS);
+    SYMBOL_HEIGHT = Math.min(rawHeight, reel0.clientWidth);
+
+    // Constrain reels-window size so cells stay square-ish
+    const gap = 2;
+    const padding = 4 * 2;
+    const border = 2 * 2;
+    const idealWidth =
+      NUM_REELS * SYMBOL_HEIGHT + (NUM_REELS - 1) * gap + padding + border;
+    reelsWindow.style.maxWidth = idealWidth + "px";
+    const idealHeight = VISIBLE_ROWS * SYMBOL_HEIGHT + padding + border;
+    reelsWindow.style.maxHeight = idealHeight + "px";
+
+    // Re-read width after constraint
+    SYMBOL_HEIGHT = Math.min(rawHeight, reel0.clientWidth);
   }
   buildReels();
   // Clamp reel heights
@@ -426,16 +438,29 @@ function updateSpinButton() {
 
 function resizeCanvas() {
   const container = document.querySelector(".reels-window");
-  canvas.width = container.clientWidth - 8;
-  canvas.height = container.clientHeight - 0;
 
   // Recalculate symbol height based on actual reel size (capped to reel width)
   const reel0 = document.getElementById("reel-0");
   if (reel0) {
-    SYMBOL_HEIGHT = Math.min(
-      Math.floor(reel0.clientHeight / VISIBLE_ROWS),
-      reel0.clientWidth,
-    );
+    // First pass: calculate height without width cap to find ideal size
+    const rawHeight = Math.floor(reel0.clientHeight / VISIBLE_ROWS);
+    SYMBOL_HEIGHT = Math.min(rawHeight, reel0.clientWidth);
+
+    // Constrain reels-window size so cells stay square-ish
+    // gap:2px between reels, padding:4px each side, border:2px each side
+    const gap = 2;
+    const padding = 4 * 2;
+    const border = 2 * 2;
+    const idealWidth =
+      NUM_REELS * SYMBOL_HEIGHT + (NUM_REELS - 1) * gap + padding + border;
+    container.style.maxWidth = idealWidth + "px";
+    const idealHeight = VISIBLE_ROWS * SYMBOL_HEIGHT + padding + border;
+    container.style.maxHeight = idealHeight + "px";
+
+    // After constraining width, recalculate with new reel width
+    const newReelWidth = reel0.clientWidth;
+    SYMBOL_HEIGHT = Math.min(rawHeight, newReelWidth);
+
     // Update all symbol cells
     document.querySelectorAll(".symbol-cell").forEach((cell) => {
       cell.style.height = SYMBOL_HEIGHT + "px";
@@ -450,6 +475,9 @@ function resizeCanvas() {
       }
     }
   }
+
+  canvas.width = container.clientWidth - 8;
+  canvas.height = container.clientHeight - 0;
 }
 
 // ---- SPIN LOGIC ----
