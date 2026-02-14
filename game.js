@@ -128,6 +128,158 @@ let cycleInterval = null;
 let cycleLines = [];
 let cycleIndex = 0;
 
+// ---- SOUND SYSTEM (Web Audio API) ----
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx = null;
+
+function ensureAudio() {
+  if (!audioCtx) audioCtx = new AudioCtx();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+function playTone(freq, duration, type = 'square', volume = 0.15, detune = 0) {
+  const ctx = ensureAudio();
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = type;
+  osc.frequency.value = freq;
+  osc.detune.value = detune;
+  gain.gain.setValueAtTime(volume, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start();
+  osc.stop(ctx.currentTime + duration);
+}
+
+function playNoise(duration, volume = 0.08) {
+  const ctx = ensureAudio();
+  const bufferSize = ctx.sampleRate * duration;
+  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+  const src = ctx.createBufferSource();
+  const gain = ctx.createGain();
+  const filter = ctx.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.frequency.value = 800;
+  src.buffer = buffer;
+  gain.gain.setValueAtTime(volume, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+  src.connect(filter);
+  filter.connect(gain);
+  gain.connect(ctx.destination);
+  src.start();
+}
+
+function sndClick() {
+  playTone(800, 0.08, 'square', 0.12);
+  setTimeout(() => playTone(1000, 0.06, 'square', 0.08), 30);
+}
+
+function sndSpinStart() {
+  // Soft whoosh
+  const ctx = ensureAudio();
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  const filter = ctx.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.frequency.value = 600;
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(100, ctx.currentTime);
+  osc.frequency.linearRampToValueAtTime(250, ctx.currentTime + 0.3);
+  gain.gain.setValueAtTime(0.06, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+  osc.connect(filter);
+  filter.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start();
+  osc.stop(ctx.currentTime + 0.35);
+  playNoise(0.2, 0.03);
+}
+
+let spinLoopNode = null;
+let spinLoopGain = null;
+
+function sndSpinLoop() {
+  const ctx = ensureAudio();
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  const filter = ctx.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.frequency.value = 400;
+  osc.type = 'sine';
+  osc.frequency.value = 80;
+  gain.gain.value = 0.025;
+  osc.connect(filter);
+  filter.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start();
+  spinLoopNode = osc;
+  spinLoopGain = gain;
+}
+
+function sndSpinStop() {
+  if (spinLoopNode) {
+    spinLoopGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
+    spinLoopNode.stop(audioCtx.currentTime + 0.2);
+    spinLoopNode = null;
+    spinLoopGain = null;
+  }
+}
+
+function sndReelStop(index) {
+  // Soft click-thud
+  playTone(200 - index * 15, 0.1, 'sine', 0.1);
+}
+
+function sndWin() {
+  // Happy ascending arpeggio
+  const notes = [523, 659, 784, 1047];
+  notes.forEach((f, i) => {
+    setTimeout(() => playTone(f, 0.2, 'square', 0.1), i * 80);
+  });
+}
+
+function sndBigWin() {
+  // Fanfare
+  const notes = [523, 659, 784, 1047, 1319, 1568];
+  notes.forEach((f, i) => {
+    setTimeout(() => {
+      playTone(f, 0.3, 'square', 0.12);
+      playTone(f * 0.5, 0.3, 'triangle', 0.08);
+    }, i * 100);
+  });
+}
+
+function sndAngry() {
+  // Play the MP3 file
+  const audio = new Audio('sound/було вже.mp3');
+  audio.volume = 0.5;
+  audio.play().catch(() => {});
+}
+
+function sndCredit() {
+  playTone(440, 0.15, 'sine', 0.1);
+  setTimeout(() => playTone(660, 0.15, 'sine', 0.1), 100);
+  setTimeout(() => playTone(880, 0.2, 'sine', 0.12), 200);
+}
+
+function sndSexFeature() {
+  // Funky rising
+  const notes = [330, 440, 554, 659, 880];
+  notes.forEach((f, i) => {
+    setTimeout(() => playTone(f, 0.15, 'triangle', 0.1), i * 60);
+  });
+}
+
+function sndTransform() {
+  playTone(600, 0.15, 'sine', 0.1);
+  setTimeout(() => playTone(900, 0.1, 'sine', 0.08), 80);
+  playNoise(0.1, 0.05);
+}
+
 // Reel state: what's currently showing (after spin)
 let reelResults = []; // [reel][row] = symbol index
 
@@ -205,6 +357,7 @@ function randomSymbol() {
     if (i === ANGRY_INDEX) return 12; // angry very frequent
     if (s.type === "helper" && s.comboNum === 5) return 8; // helper 5 twice as often
     if (s.type === "helper" && s.comboNum === 4) return 8; // helper 4 twice as often
+    if (s.type === "helper" && s.comboNum === 2) return 6; // helper 2 slightly more often
     if (s.type === "helper") return 4; // helpers common
     if (s.tier === 2) return 3; // medium regular
     return 2; // rare regular (happy)
@@ -256,6 +409,7 @@ function takeCredit() {
   balance += 1000;
   balanceEl.textContent = balance;
   showWinMessage("💰 КРЕДИТ +1000!");
+  sndCredit();
   updateSpinButton();
 }
 
@@ -312,6 +466,9 @@ function spin() {
   winMsg.classList.add("hidden");
   winEl.textContent = "0";
 
+  sndClick();
+  setTimeout(() => { sndSpinStart(); sndSpinLoop(); }, 50);
+
   balance -= bet;
   balanceEl.textContent = balance;
 
@@ -361,6 +518,7 @@ function checkSexFeature() {
     }
 
     highlightSexTrigger();
+    sndSexFeature();
     let runningTotal = 0;
     let prevWinMap = {}; // tracks paylineIndex → win amount to prevent double-counting
 
@@ -377,8 +535,10 @@ function checkSexFeature() {
       if (cw0.length > 0) animateComboTransform(cw0);
       if (p0.totalLoss > 0 && p0.totalWin > 0) {
         showWinMessage(`😡 ЗЛИЙ КУЧМА КРАДЕ ${p0.totalLoss}! 🎉 ВИГРАШ ${p0.totalWin}!`);
+        sndWin();
       } else if (p0.totalLoss > 0) {
         showWinMessage(`😡 ЗЛИЙ КУЧМА КРАДЕ ${p0.totalLoss}!`);
+        sndAngry();
       }
     }
     for (const w of p0.winningLines) prevWinMap[w.paylineIndex] = w.win;
@@ -391,6 +551,7 @@ function checkSexFeature() {
               clearHighlights();
               clearCanvas();
               showWinMessage("🔥 КУЧМА ДОБРІШАЄ 🔥");
+              sndTransform();
               animateAngryToHappy(angryCells, resolve);
             })
           : Promise.resolve();
@@ -420,6 +581,7 @@ function checkSexFeature() {
           clearHighlights();
           clearCanvas();
           showWinMessage("КУЧМА ЕЯКУЛІРУЄ!!!");
+          sndTransform();
           const step2 = new Promise((resolve) =>
             animateSexToSmoking(sexCells, resolve),
           );
@@ -460,6 +622,7 @@ function checkSexFeature() {
                 clearHighlights();
                 clearCanvas();
                 showWinMessage("😤 КУЧМА КУРИТЬ 😤");
+                sndTransform();
                 const step3 = new Promise((resolve) =>
                   animateHappyToSmoking(happyCells, resolve),
                 );
@@ -946,6 +1109,8 @@ function animateReel(reelIndex, finalRow, duration) {
       } else {
         strip.classList.remove("spinning");
         strip.style.transform = `translateY(-${endOffset}px)`;
+        sndReelStop(reelIndex);
+        if (reelIndex === NUM_REELS - 1) sndSpinStop();
         resolve();
       }
     }
@@ -1090,16 +1255,23 @@ function evaluateWin() {
       if (maxCount >= 5) h5msg = '💪💪💪 ГІПЕР ПОТУЖНО!';
       else if (maxCount >= 4) h5msg = '💪💪 ДУЖЕ ПОТУЖНО!';
       else h5msg = '💪 ПОТУЖНО!';
+      const potAudio = new Audio('sound/потужно.mp3');
+      potAudio.volume = 0.6;
+      potAudio.play().catch(() => {});
     }
 
     if (totalLoss > 0 && totalWin > 0) {
       showWinMessage(`😡 ЗЛИЙ КУЧМА КРАДЕ ${totalLoss}! 🎉 ВИГРАШ ${totalWin}!` + (h5msg ? ` ${h5msg}` : ''));
+      sndWin();
     } else if (totalLoss > 0) {
       showWinMessage(`😡 ЗЛИЙ КУЧМА КРАДЕ ${totalLoss}!`);
+      sndAngry();
     } else if (h5msg) {
       showWinMessage(`${h5msg} ВИГРАШ ${totalWin}!`);
+      sndBigWin();
     } else {
       showWinMessage(`🎉 ВИГРАШ ${totalWin}!`);
+      if (totalWin >= bet * 20) sndBigWin(); else sndWin();
     }
   }
 
@@ -1173,6 +1345,11 @@ function showCycleStep() {
   const wl = cycleLines[cycleIndex];
   highlightSingleWin(wl);
   drawSingleWinPayline(wl);
+  if (wl.isAngry) {
+    playTone(200, 0.15, 'sawtooth', 0.08);
+  } else {
+    playTone(523 + cycleIndex * 50, 0.15, 'square', 0.07);
+  }
   cycleIndex = (cycleIndex + 1) % cycleLines.length;
 }
 
@@ -1456,17 +1633,22 @@ function processHelper2(h2wins, onComplete) {
   clearHighlights();
   clearCanvas();
   showWinMessage("😈 КУЧМА ЗЛІШАЄ!");
+  const rozbAudio = new Audio('sound/вийди розбійник.mp3');
+  rozbAudio.volume = 0.6;
+  rozbAudio.play().catch(() => {});
 
-  let completed = 0;
-  for (let i = 0; i < cells.length; i++) {
-    const { reel, row } = cells[i];
-    const strip = document.getElementById(`strip-${reel}`);
-    const cell = strip.children[EXTRA_SYMBOLS + row];
-    if (!cell) {
-      completed++;
-      if (completed === cells.length) afterHelper2Transform();
-      continue;
-    }
+  // Wait for audio to play a bit before starting transformations
+  setTimeout(() => {
+    let completed = 0;
+    for (let i = 0; i < cells.length; i++) {
+      const { reel, row } = cells[i];
+      const strip = document.getElementById(`strip-${reel}`);
+      const cell = strip.children[EXTRA_SYMBOLS + row];
+      if (!cell) {
+        completed++;
+        if (completed === cells.length) afterHelper2Transform();
+        continue;
+      }
 
     setTimeout(() => {
       // Shake
@@ -1501,7 +1683,8 @@ function processHelper2(h2wins, onComplete) {
         }, 300);
       }, 500);
     }, i * 300);
-  }
+    }
+  }, 1500);
 
   function afterHelper2Transform() {
     // Re-evaluate the grid after angry replacement
@@ -1517,10 +1700,13 @@ function processHelper2(h2wins, onComplete) {
         if (comboWins.length > 0) animateComboTransform(comboWins);
         if (result.totalLoss > 0 && result.totalWin > 0) {
           showWinMessage(`😡 ЗЛИЙ КУЧМА КРАДЕ ${result.totalLoss}! 🎉 ВИГРАШ ${result.totalWin}!`);
+          sndWin();
         } else if (result.totalLoss > 0) {
           showWinMessage(`😡 ЗЛИЙ КУЧМА КРАДЕ ${result.totalLoss}!`);
+          sndAngry();
         } else {
           showWinMessage(`🎉 ВИГРАШ ${result.totalWin}!`);
+          sndWin();
         }
       }
       setTimeout(onComplete, 1500);
@@ -1536,6 +1722,7 @@ function processHelper4(h4wins, onComplete) {
   clearHighlights();
   clearCanvas();
   showWinMessage("🏃 ЯНУКОВИЧ ТІКАЄ!");
+  new Audio('sound/astanavites.mp3').play().catch(() => {});
 
   let completed = 0;
   for (let i = 0; i < cells.length; i++) {
@@ -1591,10 +1778,13 @@ function processHelper4(h4wins, onComplete) {
         if (comboWins.length > 0) animateComboTransform(comboWins);
         if (result.totalLoss > 0 && result.totalWin > 0) {
           showWinMessage(`😡 ЗЛИЙ КУЧМА КРАДЕ ${result.totalLoss}! 🎉 ВИГРАШ ${result.totalWin}!`);
+          sndWin();
         } else if (result.totalLoss > 0) {
           showWinMessage(`😡 ЗЛИЙ КУЧМА КРАДЕ ${result.totalLoss}!`);
+          sndAngry();
         } else {
           showWinMessage(`🎉 ВИГРАШ ${result.totalWin}!`);
+          sndWin();
         }
       }
       setTimeout(onComplete, 1500);
