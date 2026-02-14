@@ -923,6 +923,49 @@ body {
   }
 }
 
+/* Wide-screen: move controls to the right of the slot machine */
+@media (orientation: landscape) and (min-width: 950px) {
+  .controls {
+    position: fixed;
+    top: 55%;
+    right: 0;
+    transform: translateY(-50%);
+    width: calc((100vw - 750px) / 2);
+    margin: 0;
+    z-index: 100;
+  }
+
+  .spin-button {
+    padding: 30px 50px;
+    font-size: 2rem;
+    border-radius: 60px;
+    letter-spacing: 4px;
+  }
+
+  .payline-browser {
+    position: fixed;
+    top: 35%;
+    right: 0;
+    transform: translateY(-50%);
+    width: calc((100vw - 750px) / 2);
+    margin: 0;
+    flex-direction: column;
+    z-index: 100;
+    gap: 14px;
+  }
+
+  .pl-btn {
+    width: 64px;
+    height: 64px;
+    font-size: 1.6rem;
+  }
+
+  .pl-label {
+    font-size: 1.1rem;
+    min-width: unset;
+  }
+}
+
 /* Force landscape rotation on portrait screens */
 @media (orientation: portrait) {
   html {

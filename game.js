@@ -1628,7 +1628,7 @@ function setupPaylineBrowser() {
     if (previewIndex < 0) previewIndex = PAYLINES.length - 1;
 
     drawSinglePayline(previewIndex);
-    label.textContent = `Лінія ${previewIndex + 1} / ${PAYLINES.length}`;
+    label.textContent = "Лінії";
 
     // Auto-hide after 3s of inactivity
     clearTimeout(previewTimeout);
