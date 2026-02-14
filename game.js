@@ -179,24 +179,9 @@ function sndClick() {
 }
 
 function sndSpinStart() {
-  // Soft whoosh
-  const ctx = ensureAudio();
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
-  const filter = ctx.createBiquadFilter();
-  filter.type = 'lowpass';
-  filter.frequency.value = 600;
-  osc.type = 'sine';
-  osc.frequency.setValueAtTime(100, ctx.currentTime);
-  osc.frequency.linearRampToValueAtTime(250, ctx.currentTime + 0.3);
-  gain.gain.setValueAtTime(0.06, ctx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
-  osc.connect(filter);
-  filter.connect(gain);
-  gain.connect(ctx.destination);
-  osc.start();
-  osc.stop(ctx.currentTime + 0.35);
-  playNoise(0.2, 0.03);
+  const audio = new Audio('sound/спін.mp3');
+  audio.volume = 0.5;
+  audio.play().catch(() => {});
 }
 
 let spinLoopNode = null;
@@ -267,11 +252,9 @@ function sndCredit() {
 }
 
 function sndSexFeature() {
-  // Funky rising
-  const notes = [330, 440, 554, 659, 880];
-  notes.forEach((f, i) => {
-    setTimeout(() => playTone(f, 0.15, 'triangle', 0.1), i * 60);
-  });
+  const audio = new Audio('sound/кучма.mp3');
+  audio.volume = 0.6;
+  audio.play().catch(() => {});
 }
 
 function sndTransform() {
