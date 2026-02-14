@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🎰 КУЧМОЛОТ</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="slot-machine">
+      <h1 class="title">🎰 КУЧМОЛОТ 🎰</h1>
+
+      <div class="payline-browser">
+        <button id="pl-prev" class="pl-btn">◀</button>
+        <span id="pl-label" class="pl-label">Лінії</span>
+        <button id="pl-next" class="pl-btn">▶</button>
+      </div>
+      <div class="reels-container">
+        <div class="reels-window">
+          <div class="reel" id="reel-0"></div>
+          <div class="reel" id="reel-1"></div>
+          <div class="reel" id="reel-2"></div>
+          <div class="reel" id="reel-3"></div>
+          <div class="reel" id="reel-4"></div>
+        </div>
+        <!-- Payline overlay -->
+        <canvas id="payline-canvas" class="payline-overlay"></canvas>
+      </div>
+
+      <div class="controls">
+        <button id="spin-btn" class="spin-button">КРУТИТИ</button>
+      </div>
+      <div class="info-bar">
+        <div class="balance-display">
+          <span class="label">Баланс:</span>
+          <span id="balance" class="value">1000</span>
+        </div>
+        <div class="bet-display">
+          <span class="label">Ставка:</span>
+          <button id="bet-down" class="bet-btn">−</button>
+          <span id="bet" class="value">100</span>
+          <button id="bet-up" class="bet-btn">+</button>
+        </div>
+        <div class="win-display">
+          <span class="label">Виграш:</span>
+          <span id="win" class="value">0</span>
+        </div>
+      </div>
+
+      <div id="win-message" class="win-message hidden"></div>
+    </div>
+
+    <script src="game.js"></script>
+  </body>
+</html>
