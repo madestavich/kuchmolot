@@ -216,9 +216,9 @@ body {
 }
 
 .symbol-cell img {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   border-radius: 6px;
   image-rendering: auto;
 }
@@ -941,23 +941,126 @@ body {
     left: 100vw;
     left: 100dvw;
     overflow: hidden;
-    /* After rotation: phone bottom bar is now on the right side of rotated layout.
-       Pad all edges that may have system UI */
     padding-top: env(safe-area-inset-left, 0px);
     padding-bottom: env(safe-area-inset-right, 0px);
     padding-left: env(safe-area-inset-top, 0px);
     padding-right: env(safe-area-inset-bottom, 0px);
   }
 
+  /* Switch slot-machine to horizontal grid: [left-bar] [center] [right-bar] */
   .slot-machine {
     height: 100%;
     max-width: 100%;
     width: 100%;
+    display: grid;
+    grid-template-columns: 50px 1fr 50px;
+    grid-template-rows: 1fr auto auto;
+    grid-template-areas:
+      "left  center right"
+      "left  win    right"
+      "info  info   info";
+    padding: 4px;
+    gap: 4px;
+    align-items: center;
   }
 
+  /* Hide title on mobile */
+  .title {
+    display: none;
+  }
+
+  /* Hide decor panels */
+  .decor-panel {
+    display: none !important;
+  }
+
+  /* Win message in center under reels */
+  .win-message {
+    grid-area: win;
+    min-height: 18px;
+    padding: 2px;
+    font-size: 0.8rem;
+    justify-self: center;
+  }
+
+  /* ---- LEFT BAR: Payline browser ---- */
+  .payline-browser {
+    grid-area: left;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin: 0;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 215, 0, 0.2);
+    padding: 6px 2px;
+    height: 100%;
+  }
+
+  .pl-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 0;
+  }
+
+  /* Replace ◀▶ with ▲▼ via pseudo-elements */
+  #pl-prev {
+    order: -1;
+  }
+
+  #pl-prev::after {
+    content: "▲";
+    font-size: 1rem;
+  }
+
+  #pl-next::after {
+    content: "▼";
+    font-size: 1rem;
+  }
+
+  .pl-label {
+    font-size: 0.55rem;
+    min-width: unset;
+    width: 0;
+    word-break: break-all;
+    text-align: center;
+    line-height: 1.4;
+    letter-spacing: 0;
+    overflow: visible;
+    white-space: normal;
+  }
+
+  /* ---- RIGHT BAR: Spin button ---- */
+  .controls {
+    grid-area: right;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    height: 100%;
+  }
+
+  .spin-button {
+    padding: 8px 4px;
+    font-size: 0.85rem;
+    letter-spacing: 0;
+    line-height: 1.2;
+    border-radius: 25px;
+    width: 42px;
+    min-height: 80px;
+    text-align: center;
+  }
+
+  /* ---- CENTER: Reels ---- */
   .reels-container {
+    grid-area: center;
     flex: 0 0 auto;
     min-height: 0;
+    align-self: center;
+    justify-self: center;
   }
 
   .reels-window {
@@ -965,16 +1068,30 @@ body {
     min-height: 0;
   }
 
-  .slot-machine {
-    justify-content: center;
-    gap: 4px;
-  }
-
+  /* ---- BOTTOM: Info bar spanning full width ---- */
   .info-bar {
+    grid-area: info;
     margin-top: 0;
+    padding: 4px 8px;
+    border-radius: 6px;
   }
 
-  .decor-panel {
-    display: none !important;
+  .info-bar .label {
+    font-size: 0.6rem;
+    margin-right: 2px;
+  }
+
+  .info-bar .value {
+    font-size: 0.85rem;
+  }
+
+  .bet-btn {
+    width: 22px;
+    height: 22px;
+    font-size: 0.8rem;
+  }
+
+  .bet-display {
+    gap: 3px;
   }
 }

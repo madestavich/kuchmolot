@@ -310,6 +310,21 @@ function init() {
   setupControls();
   resizeCanvas();
   window.addEventListener("resize", resizeCanvas);
+  updateSpinButton();
+}
+
+// Check if we're in portrait (mobile) mode
+function isMobile() {
+  return window.matchMedia("(orientation: portrait)").matches;
+}
+
+// Set button text with <br> between each letter on mobile
+function setButtonText(el, text) {
+  if (isMobile()) {
+    el.innerHTML = text.split("").join("<br>");
+  } else {
+    el.textContent = text;
+  }
 }
 
 function buildReels() {
@@ -425,12 +440,12 @@ function takeCredit() {
 
 function updateSpinButton() {
   if (balance < bet && !spinning) {
-    spinBtn.textContent = "ВЗЯТИ КРЕДИТ";
+    setButtonText(spinBtn, "ВЗЯТИ КРЕДИТ");
     spinBtn.dataset.mode = "credit";
     spinBtn.disabled = false;
     spinBtn.classList.add("credit-mode");
   } else {
-    spinBtn.textContent = "КРУТИТИ";
+    setButtonText(spinBtn, "КРУТИТИ");
     spinBtn.dataset.mode = "spin";
     spinBtn.classList.remove("credit-mode");
   }
