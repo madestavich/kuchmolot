@@ -923,49 +923,6 @@ body {
   }
 }
 
-/* Wide-screen: move controls to the right of the slot machine */
-@media (orientation: landscape) and (min-width: 950px) {
-  .controls {
-    position: fixed;
-    top: 55%;
-    right: 0;
-    transform: translateY(-50%);
-    width: calc((100vw - 750px) / 2);
-    margin: 0;
-    z-index: 100;
-  }
-
-  .spin-button {
-    padding: 30px 50px;
-    font-size: 2rem;
-    border-radius: 60px;
-    letter-spacing: 4px;
-  }
-
-  .payline-browser {
-    position: fixed;
-    top: 35%;
-    right: 0;
-    transform: translateY(-50%);
-    width: calc((100vw - 750px) / 2);
-    margin: 0;
-    flex-direction: column;
-    z-index: 100;
-    gap: 14px;
-  }
-
-  .pl-btn {
-    width: 64px;
-    height: 64px;
-    font-size: 1.6rem;
-  }
-
-  .pl-label {
-    font-size: 1.1rem;
-    min-width: unset;
-  }
-}
-
 /* Force landscape rotation on portrait screens */
 @media (orientation: portrait) {
   html {
@@ -996,7 +953,7 @@ body {
     max-width: 100%;
     width: 100%;
     display: grid;
-    grid-template-columns: 50px 1fr 50px;
+    grid-template-columns: 70px 1fr 70px;
     grid-template-rows: 1fr auto auto;
     grid-template-areas:
       "left  center right"
@@ -1043,8 +1000,8 @@ body {
   }
 
   .pl-btn {
-    width: 36px;
-    height: 36px;
+    width: 50px;
+    height: 50px;
     font-size: 0;
   }
 
@@ -1055,12 +1012,12 @@ body {
 
   #pl-prev::after {
     content: "▲";
-    font-size: 1rem;
+    font-size: 1.3rem;
   }
 
   #pl-next::after {
     content: "▼";
-    font-size: 1rem;
+    font-size: 1.3rem;
   }
 
   .pl-label {
@@ -1087,28 +1044,31 @@ body {
   }
 
   .spin-button {
-    padding: 8px 4px;
-    font-size: 0.85rem;
+    padding: 10px 4px;
+    font-size: 1rem;
     letter-spacing: 0;
     line-height: 1.2;
-    border-radius: 25px;
-    width: 42px;
-    min-height: 80px;
+    border-radius: 30px;
+    width: 56px;
+    min-height: 110px;
     text-align: center;
   }
 
   /* ---- CENTER: Reels ---- */
   .reels-container {
     grid-area: center;
-    flex: 0 0 auto;
     min-height: 0;
+    min-width: 0;
     align-self: center;
     justify-self: center;
+    width: 100%;
+    overflow: hidden;
   }
 
   .reels-window {
-    flex: 0 0 auto;
     min-height: 0;
+    min-width: 0;
+    width: 100%;
   }
 
   /* ---- BOTTOM: Info bar spanning full width ---- */
