@@ -810,6 +810,11 @@ body {
     letter-spacing: 1px;
   }
 
+  /* Hide decorative panels on mobile to give more space to reels */
+  .decor-panel {
+    display: none !important;
+  }
+
   .info-bar {
     padding: 6px 8px;
     margin-bottom: 6px;
@@ -836,8 +841,8 @@ body {
   }
 
   .reels-window {
-    gap: 2px;
-    padding: 3px;
+    gap: 0px;
+    padding: 2px;
     border-radius: 8px;
   }
 
@@ -846,11 +851,11 @@ body {
   }
 
   .symbol-cell {
-    padding: 2px;
+    padding: 0px;
   }
 
   .symbol-cell img {
-    border-radius: 4px;
+    border-radius: 2px;
   }
 
   .reels-container {
@@ -906,8 +911,12 @@ body {
   }
 
   .reels-window {
-    gap: 1px;
-    padding: 2px;
+    gap: 0px;
+    padding: 1px;
+  }
+
+  .decor-panel {
+    display: none !important;
   }
 }
 
@@ -946,5 +955,9 @@ body {
   .reels-container {
     flex: 1;
     min-height: 0;
+  }
+
+  .decor-panel {
+    display: none !important;
   }
 }
