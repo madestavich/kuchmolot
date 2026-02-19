@@ -923,6 +923,398 @@ body {
   }
 }
 
+/* ============ JACKPOT OVERLAY ============ */
+
+.jackpot-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: all;
+}
+
+.jackpot-overlay.hidden {
+  display: none;
+}
+
+.jackpot-bg {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(0, 0, 0, 0.7) 0%,
+    rgba(0, 0, 0, 0.95) 100%
+  );
+  animation: jackpotBgPulse 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes jackpotBgPulse {
+  0% {
+    background: radial-gradient(
+      ellipse at center,
+      rgba(40, 0, 80, 0.85) 0%,
+      rgba(0, 0, 0, 0.97) 100%
+    );
+  }
+  50% {
+    background: radial-gradient(
+      ellipse at center,
+      rgba(80, 0, 0, 0.85) 0%,
+      rgba(0, 0, 0, 0.97) 100%
+    );
+  }
+  100% {
+    background: radial-gradient(
+      ellipse at center,
+      rgba(80, 60, 0, 0.85) 0%,
+      rgba(0, 0, 0, 0.97) 100%
+    );
+  }
+}
+
+.jackpot-fireworks {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.jackpot-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  overflow: hidden;
+}
+
+.jackpot-spark {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: jackpotSparkFly linear forwards;
+}
+
+@keyframes jackpotSparkFly {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+  80% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--sx), var(--sy)) scale(0);
+  }
+}
+
+.jackpot-content {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  animation: jackpotContentAppear 0.8s cubic-bezier(0.2, 0.8, 0.2, 1.2) forwards;
+}
+
+@keyframes jackpotContentAppear {
+  0% {
+    transform: scale(0) rotate(-20deg);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.15) rotate(3deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+.jackpot-title {
+  font-size: 3.5rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 8px;
+  background: linear-gradient(
+    180deg,
+    #ffd700 0%,
+    #ff8c00 40%,
+    #ff4500 70%,
+    #ffd700 100%
+  );
+  background-size: 100% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.9))
+    drop-shadow(0 0 60px rgba(255, 100, 0, 0.6));
+  animation:
+    jackpotTitleShine 1.2s ease-in-out infinite alternate,
+    jackpotTitleShake 0.15s linear infinite;
+}
+
+@keyframes jackpotTitleShine {
+  0% {
+    background-position: 0% 0%;
+    filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.9))
+      drop-shadow(0 0 60px rgba(255, 100, 0, 0.6));
+  }
+  100% {
+    background-position: 0% 100%;
+    filter: drop-shadow(0 0 40px rgba(255, 215, 0, 1))
+      drop-shadow(0 0 80px rgba(255, 200, 0, 0.8));
+  }
+}
+
+@keyframes jackpotTitleShake {
+  0% {
+    transform: translate(-1px, -1px) rotate(-0.5deg);
+  }
+  25% {
+    transform: translate(1px, 0px) rotate(0.5deg);
+  }
+  50% {
+    transform: translate(-1px, 1px) rotate(-0.3deg);
+  }
+  75% {
+    transform: translate(1px, -1px) rotate(0.3deg);
+  }
+  100% {
+    transform: translate(-1px, -1px) rotate(-0.5deg);
+  }
+}
+
+.jackpot-image-wrap {
+  position: relative;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 5px solid #ffd700;
+  box-shadow:
+    0 0 30px rgba(255, 215, 0, 0.8),
+    0 0 60px rgba(255, 100, 0, 0.5),
+    0 0 100px rgba(255, 50, 0, 0.3),
+    inset 0 0 30px rgba(255, 215, 0, 0.4);
+  animation:
+    jackpotImagePulse 0.6s ease-in-out infinite alternate,
+    jackpotImageSpin 8s linear infinite;
+}
+
+@keyframes jackpotImagePulse {
+  0% {
+    box-shadow:
+      0 0 30px rgba(255, 215, 0, 0.8),
+      0 0 60px rgba(255, 100, 0, 0.5),
+      0 0 100px rgba(255, 50, 0, 0.3);
+    border-color: #ffd700;
+  }
+  100% {
+    box-shadow:
+      0 0 50px rgba(255, 215, 0, 1),
+      0 0 90px rgba(255, 100, 0, 0.7),
+      0 0 140px rgba(255, 50, 0, 0.5);
+    border-color: #ff8c00;
+  }
+}
+
+@keyframes jackpotImageSpin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.jackpot-radie {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  animation: jackpotRadieCounterSpin 8s linear infinite;
+}
+
+@keyframes jackpotRadieCounterSpin {
+  0% {
+    transform: rotate(0deg) scale(1.15);
+  }
+  100% {
+    transform: rotate(-360deg) scale(1.15);
+  }
+}
+
+.jackpot-amount {
+  font-size: 3rem;
+  font-weight: 900;
+  color: #fff;
+  text-shadow:
+    0 0 10px #ffd700,
+    0 0 20px #ffd700,
+    0 0 40px #ff8c00,
+    0 0 60px #ff4500;
+  animation:
+    jackpotAmountPop 0.5s ease-out forwards,
+    jackpotAmountGlow 1s ease-in-out infinite alternate 0.5s;
+  letter-spacing: 4px;
+}
+
+@keyframes jackpotAmountPop {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.3);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes jackpotAmountGlow {
+  0% {
+    text-shadow:
+      0 0 10px #ffd700,
+      0 0 20px #ffd700,
+      0 0 40px #ff8c00;
+  }
+  100% {
+    text-shadow:
+      0 0 20px #fff,
+      0 0 40px #ffd700,
+      0 0 80px #ff4500,
+      0 0 120px #ff0000;
+  }
+}
+
+.jackpot-sub {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #ff4500;
+  text-shadow: 0 0 15px rgba(255, 69, 0, 0.8);
+  animation: jackpotSubBlink 0.4s ease-in-out infinite alternate;
+  letter-spacing: 6px;
+}
+
+@keyframes jackpotSubBlink {
+  0% {
+    opacity: 0.6;
+    color: #ff4500;
+  }
+  100% {
+    opacity: 1;
+    color: #ffd700;
+  }
+}
+
+/* Screen shake when jackpot triggers */
+.jackpot-shake {
+  animation: screenShake 0.5s ease-in-out;
+}
+
+@keyframes screenShake {
+  0% {
+    transform: translate(0, 0);
+  }
+  10% {
+    transform: translate(-8px, -6px);
+  }
+  20% {
+    transform: translate(8px, 4px);
+  }
+  30% {
+    transform: translate(-6px, 8px);
+  }
+  40% {
+    transform: translate(6px, -4px);
+  }
+  50% {
+    transform: translate(-4px, 6px);
+  }
+  60% {
+    transform: translate(4px, -8px);
+  }
+  70% {
+    transform: translate(-8px, 4px);
+  }
+  80% {
+    transform: translate(6px, -6px);
+  }
+  90% {
+    transform: translate(-4px, 8px);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+/* Golden rain particles in jackpot */
+.jackpot-gold-rain {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: #ffd700;
+  border-radius: 2px;
+  pointer-events: none;
+  animation: goldRainFall linear forwards;
+  box-shadow: 0 0 6px rgba(255, 215, 0, 0.8);
+}
+
+@keyframes goldRainFall {
+  0% {
+    opacity: 1;
+    transform: translateY(0) rotate(0deg);
+  }
+  100% {
+    opacity: 0.3;
+    transform: translateY(var(--fall-dist, 600px)) rotate(720deg);
+  }
+}
+
+/* Highlight matched "5" symbols during jackpot */
+.symbol-cell.jackpot-highlight {
+  animation: jackpotCellPulse 0.3s ease-in-out infinite alternate;
+  z-index: 5;
+  position: relative;
+}
+
+.symbol-cell.jackpot-highlight::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 3px solid #ffd700;
+  border-radius: 10px;
+  box-shadow:
+    0 0 20px rgba(255, 215, 0, 1),
+    0 0 40px rgba(255, 100, 0, 0.7),
+    inset 0 0 15px rgba(255, 215, 0, 0.5);
+  animation: jackpotCellPulse 0.3s ease-in-out infinite alternate;
+}
+
+@keyframes jackpotCellPulse {
+  0% {
+    filter: brightness(1.5) saturate(2);
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
+  }
+  100% {
+    filter: brightness(2.5) saturate(3);
+    box-shadow:
+      0 0 35px rgba(255, 215, 0, 1),
+      0 0 60px rgba(255, 100, 0, 0.6);
+  }
+}
+
 /* Force landscape rotation on portrait screens */
 @media (orientation: portrait) {
   html {

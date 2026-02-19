@@ -540,8 +540,326 @@ function spin() {
 
   Promise.all(promises).then(() => {
     reelResults = finalSymbols;
-    checkSexFeature();
+    // Check for jackpot first (5+ of symbol "5" anywhere)
+    checkJackpot((wasJackpot) => {
+      checkSexFeature();
+    });
   });
+}
+
+// ---- JACKPOT: 5+ of symbol "5" anywhere on reels ----
+
+const JACKPOT_MULTIPLIER = 5000; // bet × 5000
+const H5_INDEX = 8; // index of symbol "5" in SYMBOLS array
+
+function checkJackpot(onComplete) {
+  // Count all "5" symbols on the visible grid
+  let h5Count = 0;
+  const h5Cells = [];
+  for (let r = 0; r < NUM_REELS; r++) {
+    for (let row = 0; row < VISIBLE_ROWS; row++) {
+      if (reelResults[r][row] === H5_INDEX) {
+        h5Count++;
+        h5Cells.push({ reel: r, row });
+      }
+    }
+  }
+
+  if (h5Count >= 5) {
+    const jackpotWin = bet * JACKPOT_MULTIPLIER;
+    triggerJackpotAnimation(jackpotWin, h5Cells, () => {
+      balance += jackpotWin;
+      balanceEl.textContent = balance;
+      winEl.textContent = jackpotWin;
+      onComplete(true);
+    });
+    return;
+  }
+
+  onComplete(false);
+}
+
+function triggerJackpotAnimation(winAmount, h5Cells, onComplete) {
+  // Highlight matched 5 symbols on the reels
+  for (const { reel, row } of h5Cells) {
+    const strip = document.getElementById(`strip-${reel}`);
+    const cell = strip.children[EXTRA_SYMBOLS + row];
+    if (cell) cell.classList.add("jackpot-highlight");
+  }
+
+  // Screen shake
+  document.querySelector(".slot-machine").classList.add("jackpot-shake");
+  setTimeout(() => {
+    document.querySelector(".slot-machine").classList.remove("jackpot-shake");
+  }, 500);
+
+  // Play jackpot sound — epic fanfare
+  sndJackpot();
+
+  // Show overlay after brief delay
+  setTimeout(() => {
+    const overlay = document.getElementById("jackpot-overlay");
+    const amountEl = document.getElementById("jackpot-amount");
+    overlay.classList.remove("hidden");
+
+    // Animate counting up the win amount
+    animateJackpotCounter(amountEl, winAmount, 3000);
+
+    // Start fireworks on canvas
+    startJackpotFireworks();
+
+    // Spawn golden rain particles
+    startGoldenRain();
+
+    // Spawn sparkle particles continuously
+    const sparkInterval = setInterval(() => spawnJackpotSparks(), 200);
+
+    // Auto-close after 7 seconds
+    setTimeout(() => {
+      clearInterval(sparkInterval);
+      stopJackpotFireworks();
+      overlay.classList.add("hidden");
+
+      // Clean up highlights
+      document
+        .querySelectorAll(".jackpot-highlight")
+        .forEach((el) => el.classList.remove("jackpot-highlight"));
+      document.querySelectorAll(".jackpot-spark").forEach((el) => el.remove());
+      document
+        .querySelectorAll(".jackpot-gold-rain")
+        .forEach((el) => el.remove());
+
+      showWinMessage(`🎰 ДЖЕКПОТ!!! ВИГРАШ ${winAmount}!!! 🎰`);
+      onComplete();
+    }, 7000);
+  }, 600);
+}
+
+function sndJackpot() {
+  // Epic multi-layered fanfare
+  const ctx = ensureAudio();
+
+  // Bass drop
+  const bassOsc = ctx.createOscillator();
+  const bassGain = ctx.createGain();
+  bassOsc.type = "sine";
+  bassOsc.frequency.value = 60;
+  bassGain.gain.setValueAtTime(0.3, ctx.currentTime);
+  bassGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 2);
+  bassOsc.connect(bassGain);
+  bassGain.connect(ctx.destination);
+  bassOsc.start();
+  bassOsc.stop(ctx.currentTime + 2);
+
+  // Ascending fanfare notes
+  const fanfare = [
+    { freq: 523, time: 0, dur: 0.4 }, // C5
+    { freq: 659, time: 0.15, dur: 0.4 }, // E5
+    { freq: 784, time: 0.3, dur: 0.4 }, // G5
+    { freq: 1047, time: 0.5, dur: 0.6 }, // C6
+    { freq: 1319, time: 0.7, dur: 0.5 }, // E6
+    { freq: 1568, time: 0.9, dur: 0.8 }, // G6
+    { freq: 2093, time: 1.2, dur: 1.0 }, // C7
+  ];
+
+  fanfare.forEach((n) => {
+    setTimeout(() => {
+      playTone(n.freq, n.dur, "square", 0.15);
+      playTone(n.freq * 0.5, n.dur, "triangle", 0.1);
+      playTone(n.freq * 1.5, n.dur * 0.5, "sine", 0.05);
+    }, n.time * 1000);
+  });
+
+  // Shimmering high notes
+  for (let i = 0; i < 20; i++) {
+    setTimeout(
+      () => {
+        const freq = 2000 + Math.random() * 3000;
+        playTone(freq, 0.15, "sine", 0.03);
+      },
+      1500 + i * 200,
+    );
+  }
+
+  // Noise burst for impact
+  setTimeout(() => playNoise(0.3, 0.15), 0);
+  setTimeout(() => playNoise(0.2, 0.1), 500);
+
+  // Try to play потужно.mp3 for extra effect
+  setTimeout(() => {
+    const audio = new Audio("sound/потужно.mp3");
+    audio.volume = 0.8;
+    audio.play().catch(() => {});
+  }, 1000);
+}
+
+function animateJackpotCounter(el, targetAmount, duration) {
+  const startTime = performance.now();
+  function update(now) {
+    const elapsed = now - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    // Ease out cubic
+    const eased = 1 - Math.pow(1 - progress, 3);
+    const current = Math.round(eased * targetAmount);
+    el.textContent = `💰 ${current.toLocaleString()} 💰`;
+    if (progress < 1) {
+      requestAnimationFrame(update);
+    }
+  }
+  requestAnimationFrame(update);
+}
+
+// ---- JACKPOT FIREWORKS (Canvas) ----
+
+let jackpotFireworksRAF = null;
+let jackpotFireworksParticles = [];
+
+function startJackpotFireworks() {
+  const canvas = document.getElementById("jackpot-fireworks");
+  if (!canvas) return;
+  const fCtx = canvas.getContext("2d");
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  jackpotFireworksParticles = [];
+  let lastLaunch = 0;
+
+  function launchFirework() {
+    const x = Math.random() * canvas.width;
+    const y = Math.random() * canvas.height * 0.5 + 50;
+    const hue = Math.random() * 360;
+    const count = 40 + Math.floor(Math.random() * 30);
+
+    for (let i = 0; i < count; i++) {
+      const angle = (Math.PI * 2 * i) / count;
+      const speed = 2 + Math.random() * 4;
+      jackpotFireworksParticles.push({
+        x,
+        y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        life: 60 + Math.random() * 40,
+        maxLife: 100,
+        hue: hue + Math.random() * 30,
+        size: 2 + Math.random() * 2,
+      });
+    }
+
+    // Play a pop sound
+    playTone(800 + Math.random() * 400, 0.1, "sine", 0.04);
+  }
+
+  function animate(now) {
+    fCtx.fillStyle = "rgba(0, 0, 0, 0.15)";
+    fCtx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Launch new firework every ~400ms
+    if (now - lastLaunch > 300 + Math.random() * 300) {
+      launchFirework();
+      lastLaunch = now;
+    }
+
+    // Update particles
+    for (let i = jackpotFireworksParticles.length - 1; i >= 0; i--) {
+      const p = jackpotFireworksParticles[i];
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += 0.04; // gravity
+      p.vx *= 0.99;
+      p.vy *= 0.99;
+      p.life--;
+
+      if (p.life <= 0) {
+        jackpotFireworksParticles.splice(i, 1);
+        continue;
+      }
+
+      const alpha = p.life / p.maxLife;
+      fCtx.fillStyle = `hsla(${p.hue}, 100%, 65%, ${alpha})`;
+      fCtx.shadowColor = `hsla(${p.hue}, 100%, 65%, ${alpha * 0.5})`;
+      fCtx.shadowBlur = 6;
+      fCtx.beginPath();
+      fCtx.arc(p.x, p.y, p.size * alpha, 0, Math.PI * 2);
+      fCtx.fill();
+    }
+
+    fCtx.shadowBlur = 0;
+    jackpotFireworksRAF = requestAnimationFrame(animate);
+  }
+
+  jackpotFireworksRAF = requestAnimationFrame(animate);
+}
+
+function stopJackpotFireworks() {
+  if (jackpotFireworksRAF) {
+    cancelAnimationFrame(jackpotFireworksRAF);
+    jackpotFireworksRAF = null;
+  }
+  jackpotFireworksParticles = [];
+  const canvas = document.getElementById("jackpot-fireworks");
+  if (canvas) {
+    const fCtx = canvas.getContext("2d");
+    fCtx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+}
+
+function spawnJackpotSparks() {
+  const container = document.getElementById("jackpot-particles");
+  if (!container) return;
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+
+  for (let i = 0; i < 8; i++) {
+    const spark = document.createElement("div");
+    spark.className = "jackpot-spark";
+    const startX = Math.random() * w;
+    const startY = Math.random() * h;
+    const endX = (Math.random() - 0.5) * 200;
+    const endY = (Math.random() - 0.5) * 200;
+    const hue = Math.random() * 60 + 20; // gold range
+    const dur = 0.8 + Math.random() * 0.8;
+
+    spark.style.left = startX + "px";
+    spark.style.top = startY + "px";
+    spark.style.setProperty("--sx", endX + "px");
+    spark.style.setProperty("--sy", endY + "px");
+    spark.style.background = `hsl(${hue}, 100%, 60%)`;
+    spark.style.boxShadow = `0 0 8px hsl(${hue}, 100%, 70%)`;
+    spark.style.animationDuration = dur + "s";
+    spark.style.width = 4 + Math.random() * 6 + "px";
+    spark.style.height = spark.style.width;
+
+    container.appendChild(spark);
+    setTimeout(() => spark.remove(), dur * 1000);
+  }
+}
+
+function startGoldenRain() {
+  const container = document.getElementById("jackpot-particles");
+  if (!container) return;
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+
+  let count = 0;
+  const interval = setInterval(() => {
+    for (let i = 0; i < 3; i++) {
+      const rain = document.createElement("div");
+      rain.className = "jackpot-gold-rain";
+      rain.style.left = Math.random() * w + "px";
+      rain.style.top = -20 + "px";
+      rain.style.setProperty("--fall-dist", h + 40 + "px");
+      const dur = 2 + Math.random() * 2;
+      rain.style.animationDuration = dur + "s";
+      const hue = 40 + Math.floor(Math.random() * 20);
+      rain.style.background = `hsl(${hue}, 100%, ${50 + Math.random() * 20}%)`;
+      rain.style.width = 4 + Math.random() * 8 + "px";
+      rain.style.height = rain.style.width;
+      rain.style.borderRadius = Math.random() > 0.5 ? "50%" : "2px";
+      container.appendChild(rain);
+      setTimeout(() => rain.remove(), dur * 1000);
+    }
+    count++;
+    if (count > 30) clearInterval(interval);
+  }, 150);
 }
 
 // ---- SEX FEATURE: 3+ sex anywhere → angry become happy (pay), then sex become smoking (pay) ----
